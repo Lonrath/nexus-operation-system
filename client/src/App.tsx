@@ -6,8 +6,10 @@ import {
   MousePointerClick, GripVertical, Edit3, Shield, FileText, Eye, 
   Target, Footprints, Flame, Trophy, Wallet, Save,
   Code, Droplets, Heart, Zap, Coffee, Swords, Utensils, Star,
-  LayoutGrid, Database, Download, Activity, Radio, Sun
+  LayoutGrid, Database, Download, Activity, Radio, Sun, ArrowUpRight,
+  ScrollText, ExternalLink, Link as LinkIcon, Stamp, ArrowLeft, Search
 } from 'lucide-react';
+import { NexusHub } from './NexusHub';
 
 // ==========================================
 // TİP TANIMLARI (TYPES)
@@ -78,6 +80,30 @@ export interface FinanceTransaction {
   category: string;
 }
 
+export interface VaultChecklistItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+export interface VaultLinkItem {
+  id: string;
+  title: string;
+  url: string;
+}
+
+export interface VaultNote {
+  id: string;
+  title: string;
+  category: string;
+  content: string;
+  checklist: VaultChecklistItem[];
+  links: VaultLinkItem[];
+  linkedGoalId?: string;
+  isSealed?: boolean;
+  updatedAt: string;
+}
+
 // ==========================================
 // SABİTLER & TÜRKİYE RESMİ TATİLLERİ
 // ==========================================
@@ -129,7 +155,6 @@ const ALL_QUEST_ICONS = [
   { id: 'Star', label: 'Yıldız', icon: Star },
 ];
 
-// TÜRKİYE RESMİ TATİL HESAPLAYICI (0-indexed month)
 const getTurkishOfficialHoliday = (month: number, day: number, year: number): string | null => {
   if (month === 0 && day === 1) return 'Yılbaşı';
   if (month === 3 && day === 23) return '23 Nisan Çocuk B.';
@@ -139,7 +164,6 @@ const getTurkishOfficialHoliday = (month: number, day: number, year: number): st
   if (month === 7 && day === 30) return '30 Ağustos Zafer B.';
   if (month === 9 && day === 29) return '29 Ekim Cumhuriyet B.';
   
-  // 2026 Dini Bayramları
   if (year === 2026) {
     if (month === 2 && day >= 20 && day <= 22) return 'Ramazan Bayramı';
     if (month === 4 && day >= 27 && day <= 30) return 'Kurban Bayramı';
@@ -223,6 +247,49 @@ const DEFAULT_TEMPLATES: SavedActivityTemplate[] = [
   { id: 'tpl-7', title: 'Algoritma & Mimari Okuması', category: 'Okuma', themeColor: '#f59e0b', defaultDurationHours: 1, priority: 'Normal', note: 'Clean Architecture kitabından 2 bölüm bitir.', defaultCost: 0 },
 ];
 
+const DEFAULT_VAULT_NOTES: VaultNote[] = [
+  {
+    id: 'note-wow-gold',
+    title: 'WoW - 5M Gold Mount Farm Rotası & Stratejisi',
+    category: 'WoW & Oyun',
+    linkedGoalId: 'goal-wow-gold',
+    isSealed: false,
+    updatedAt: '2026-09-20',
+    content: `Bu parşömen, Çarşamba günleri takvime koyduğumuz Mythic Raid ve Gold Farm seansları için canlı hazırlık defteridir.
+
+Hammadde fiyatları reset günü (Çarşamba) tavan yaptığı için toplanan cevher ve bitkileri sabah saat 10:00'dan önce Müzayede Evi'ne (AH) dizmek kritik önem taşır. Raid öncesi 2 saat transmog turu tamamlanacak.`,
+    checklist: [
+      { id: 'c1', text: 'Müzayede Evi (AH) fiyat taramasını Auctionator ile güncelle', done: true },
+      { id: 'c2', text: 'Blacksmithing ve Alchemy haftalık uzmanlık (Knowledge) görevlerini yap', done: true },
+      { id: 'c3', text: 'Old-school raid zindanlarından 15 parça transmog topla', done: false },
+      { id: 'c4', text: 'Raid flask ve pot bufflarını çantada hazırla (x20 Flacon)', done: false },
+    ],
+    links: [
+      { id: 'l1', title: 'WoWHead 11.2 Gold Farming Kılavuzu', url: 'https://www.wowhead.com' },
+      { id: 'l2', title: 'Undermine Exchange Canlı Piyasa Fiyatları', url: 'https://undermine.exchange' }
+    ]
+  },
+  {
+    id: 'note-leetcode-patterns',
+    title: 'Algoritma & Veri Yapıları - Sprint Notları',
+    category: 'Akademi & Kod',
+    linkedGoalId: 'goal-reading',
+    isSealed: false,
+    updatedAt: '2026-09-19',
+    content: `İki işaretçi (Two Pointers) ve Sliding Window tekniklerinde edge case'leri kaçırmamak için önce dizinin sıralı olup olmadığını teyit et.
+
+DFS/BFS ağaç gezintilerinde visited set'ini recursion fonksiyonuna argüman geçmeyi unutma. Mainframe mimarisi araştırması için IBM Redbook dokümanları incelenecek.`,
+    checklist: [
+      { id: 'c5', text: 'LeetCode Medium: 3 Sum & Container With Most Water çöz', done: true },
+      { id: 'c6', text: 'Graph DFS cycle-detection şablonunu çıkar', done: false },
+      { id: 'c7', text: 'Clean Architecture Bölüm 4 özetini deftere çıkar', done: false }
+    ],
+    links: [
+      { id: 'l3', title: 'NeetCode 150 Yol Haritası', url: 'https://neetcode.io/roadmap' }
+    ]
+  }
+];
+
 const MONTH_NAMES = [
   'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
   'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
@@ -231,15 +298,480 @@ const MONTH_NAMES = [
 const TIMELINE_HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 // ==========================================
-// ANA BİLEŞEN (APP)
+// PARŞÖMEN / TO-DO MODÜLÜ (NEXUS VAULT)
 // ==========================================
-export default function App() {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 8, 1)); // Eylül 2026
+function NexusVaultView({
+  notes,
+  setNotes,
+  selectedNoteId,
+  setSelectedNoteId,
+  searchQuery,
+  setSearchQuery,
+  newChecklistText,
+  setNewChecklistText,
+  newLinkTitle,
+  setNewLinkTitle,
+  newLinkUrl,
+  setNewLinkUrl,
+  isAddingLink,
+  setIsAddingLink,
+  onBackToHub,
+  onLaunchOS,
+  activeGoals
+}: {
+  notes: VaultNote[];
+  setNotes: React.Dispatch<React.SetStateAction<VaultNote[]>>;
+  selectedNoteId: string;
+  setSelectedNoteId: (id: string) => void;
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+  newChecklistText: string;
+  setNewChecklistText: (t: string) => void;
+  newLinkTitle: string;
+  setNewLinkTitle: (t: string) => void;
+  newLinkUrl: string;
+  setNewLinkUrl: (u: string) => void;
+  isAddingLink: boolean;
+  setIsAddingLink: (b: boolean) => void;
+  onBackToHub: () => void;
+  onLaunchOS: () => void;
+  activeGoals: QuestGoal[];
+}) {
+  const activeNote = notes.find(n => n.id === selectedNoteId) || notes[0];
 
-  const [activeModule, setActiveModule] = useState<'nexus-os' | 'nexus-hub' | 'nexus-finance'>('nexus-os');
+  const handleCreateNew = () => {
+    const newNote: VaultNote = {
+      id: 'note-' + Date.now(),
+      title: 'İsimsiz Parşömen',
+      category: 'Genel',
+      content: 'Buraya yapılacak adımları, farm stratejilerini ve rehber linklerini ekleyin...',
+      checklist: [],
+      links: [],
+      isSealed: false,
+      updatedAt: new Date().toISOString().slice(0, 10)
+    };
+    setNotes([newNote, ...notes]);
+    setSelectedNoteId(newNote.id);
+  };
+
+  const handleDelete = (id: string) => {
+    const remaining = notes.filter(n => n.id !== id);
+    setNotes(remaining);
+    if (selectedNoteId === id && remaining.length > 0) {
+      setSelectedNoteId(remaining[0].id);
+    }
+  };
+
+  const handleUpdate = (fields: Partial<VaultNote>) => {
+    if (!activeNote) return;
+    const updated = { ...activeNote, ...fields, updatedAt: new Date().toISOString().slice(0, 10) };
+    setNotes(notes.map(n => n.id === activeNote.id ? updated : n));
+  };
+
+  const handleToggleChecklist = (itemId: string) => {
+    if (!activeNote) return;
+    const updatedChecklist = activeNote.checklist.map(item => 
+      item.id === itemId ? { ...item, done: !item.done } : item
+    );
+    handleUpdate({ checklist: updatedChecklist });
+  };
+
+  const handleAddChecklist = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newChecklistText.trim() || !activeNote) return;
+    const newItem: VaultChecklistItem = {
+      id: 'chk-' + Date.now(),
+      text: newChecklistText.trim(),
+      done: false
+    };
+    handleUpdate({ checklist: [...activeNote.checklist, newItem] });
+    setNewChecklistText('');
+  };
+
+  const handleDeleteChecklist = (itemId: string) => {
+    if (!activeNote) return;
+    handleUpdate({ checklist: activeNote.checklist.filter(i => i.id !== itemId) });
+  };
+
+  const handleAddLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLinkTitle.trim() || !newLinkUrl.trim() || !activeNote) return;
+    let urlFormatted = newLinkUrl.trim();
+    if (!urlFormatted.startsWith('http://') && !urlFormatted.startsWith('https://')) {
+      urlFormatted = 'https://' + urlFormatted;
+    }
+    const newLink: VaultLinkItem = {
+      id: 'lnk-' + Date.now(),
+      title: newLinkTitle.trim(),
+      url: urlFormatted
+    };
+    handleUpdate({ links: [...activeNote.links, newLink] });
+    setNewLinkTitle('');
+    setNewLinkUrl('');
+    setIsAddingLink(false);
+  };
+
+  const handleDeleteLink = (linkId: string) => {
+    if (!activeNote) return;
+    handleUpdate({ links: activeNote.links.filter(l => l.id !== linkId) });
+  };
+
+  const filtered = notes.filter(n => 
+    n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    n.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const linkedGoal = activeGoals.find(g => g.id === activeNote?.linkedGoalId);
+
+  return (
+    <main className="flex-1 flex flex-col h-screen overflow-hidden bg-transparent p-6 relative">
+      {/* Üst Bar */}
+      <div className="flex items-center justify-between pb-4 border-b border-amber-500/25 shrink-0 mb-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBackToHub}
+            className="p-2.5 rounded-2xl bg-[#0f1422] border border-slate-800 hover:border-amber-500/50 text-slate-300 hover:text-amber-300 transition-all flex items-center gap-1.5 text-xs font-bold"
+          >
+            <ArrowLeft size={16} /> Hub'a Dön
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 via-amber-800 to-amber-950 p-[1.5px] shadow-[0_0_15px_rgba(245,158,11,0.25)] flex items-center justify-center">
+              <ScrollText className="text-amber-300" size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-black tracking-wider uppercase text-amber-200">NEXUS VAULT</h1>
+                <span className="text-[10px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-600/40 px-2 py-0.5 rounded">
+                  Kadim Tomarlar & Görev Defteri
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">Hedeflere bağlı to-do listeleri, farm rotaları ve rehber linkleri</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCreateNew}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 text-black font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all active:scale-95"
+          >
+            <Plus size={15} className="stroke-[3]" />
+            <span>Yeni Parşömen Aç</span>
+          </button>
+          <button
+            onClick={onLaunchOS}
+            className="px-3.5 py-2 rounded-xl bg-[#0f1422] hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold flex items-center gap-1.5"
+          >
+            <Shield size={14} className="text-amber-400" /> Takvime Git
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-1 gap-6 overflow-hidden">
+        {/* Sol Kolon: Tomar Listesi */}
+        <aside className="w-80 flex flex-col gap-3 bg-[#0a0f18]/90 border border-slate-800/90 rounded-3xl p-4 shadow-xl shrink-0">
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 text-slate-500" size={15} />
+            <input
+              type="text"
+              placeholder="Tomarlarda ara..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#0f1422] border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 outline-none focus:border-amber-500/60 font-medium"
+            />
+          </div>
+
+          <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-400 px-1 pt-1">
+            <span>Kütüphanedeki Tomarlar</span>
+            <span className="text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40 text-[10px]">
+              {notes.length} Parşömen
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-2 overflow-y-auto pr-1 flex-1">
+            {filtered.map(n => {
+              const isSelected = n.id === activeNote?.id;
+              const completedCount = n.checklist.filter(i => i.done).length;
+              const totalCount = n.checklist.length;
+
+              return (
+                <div
+                  key={n.id}
+                  onClick={() => setSelectedNoteId(n.id)}
+                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2 relative overflow-hidden group select-none ${
+                    isSelected
+                      ? 'bg-gradient-to-r from-[#1f1710] to-[#16110a] border-amber-500/70 shadow-[0_0_20px_rgba(245,158,11,0.12)]'
+                      : 'bg-[#0f1422] border-slate-800/80 hover:border-slate-700 hover:bg-[#131929]'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400/90 bg-black/40 px-1.5 py-0.2 rounded border border-amber-900/30">
+                          {n.category || 'Genel'}
+                        </span>
+                        {n.isSealed && (
+                          <span className="text-[8px] font-bold uppercase bg-red-950 text-red-400 border border-red-800/50 px-1 rounded">
+                            Mühürlü
+                          </span>
+                        )}
+                      </div>
+                      <h4 className={`text-xs font-extrabold truncate ${isSelected ? 'text-amber-200' : 'text-slate-200'}`}>
+                        {n.title || 'Başlıksız Not'}
+                      </h4>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(n.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-opacity"
+                      title="Parşömeni Yok Et"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-1.5 border-t border-white/5">
+                    <span>{totalCount > 0 ? `${completedCount}/${totalCount} Görev` : 'Not'}</span>
+                    <span>{n.updatedAt}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </aside>
+
+        {/* Sağ Kolon: Parşömen Editörü */}
+        {activeNote ? (
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-[#18120b] via-[#140e08] to-[#19130c] border-2 border-amber-700/40 rounded-3xl p-7 shadow-2xl overflow-y-auto relative font-serif">
+            {activeNote.isSealed && (
+              <div className="absolute top-6 right-6 flex items-center gap-1.5 bg-gradient-to-br from-red-800 to-red-950 text-amber-200 border-2 border-amber-500/80 px-4 py-2 rounded-2xl shadow-[0_0_25px_rgba(239,68,68,0.5)] rotate-3 select-none pointer-events-none animate-in zoom-in-90 duration-200">
+                <Stamp size={20} className="text-amber-300" />
+                <span className="font-sans font-black text-xs uppercase tracking-widest">MÜHÜRLENDİ</span>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3 pb-5 border-b border-amber-900/40 shrink-0 font-sans">
+              <div className="flex items-center justify-between gap-4">
+                <input
+                  type="text"
+                  value={activeNote.title}
+                  onChange={(e) => handleUpdate({ title: e.target.value })}
+                  placeholder="Parşömenin Başlığı..."
+                  className="bg-transparent text-2xl font-black text-amber-100 placeholder:text-amber-900/50 outline-none w-full tracking-wide font-serif"
+                />
+
+                <button
+                  onClick={() => handleUpdate({ isSealed: !activeNote.isSealed })}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold font-sans transition-all flex items-center gap-1.5 border shrink-0 ${
+                    activeNote.isSealed 
+                      ? 'bg-red-950 text-red-200 border-red-800 shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
+                      : 'bg-[#1a130c] text-amber-300/80 border-amber-800/50 hover:border-amber-500'
+                  }`}
+                >
+                  <Stamp size={14} />
+                  <span>{activeNote.isSealed ? 'Mührü Kaldır' : 'Mühürle'}</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-1.5 bg-[#171009] border border-amber-900/50 rounded-xl px-2.5 py-1">
+                  <span className="text-[10px] text-amber-400 font-mono font-bold uppercase">Kategori:</span>
+                  <input
+                    type="text"
+                    value={activeNote.category}
+                    onChange={(e) => handleUpdate({ category: e.target.value })}
+                    className="bg-transparent text-xs text-amber-100 font-bold outline-none w-28"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-[#171009] border border-amber-900/50 rounded-xl px-2.5 py-1">
+                  <Award size={13} className="text-amber-400" />
+                  <span className="text-[10px] text-amber-400 font-mono font-bold uppercase">Hedef Bağı:</span>
+                  <select
+                    value={activeNote.linkedGoalId || ''}
+                    onChange={(e) => handleUpdate({ linkedGoalId: e.target.value || undefined })}
+                    className="bg-transparent text-xs text-amber-200 font-bold outline-none cursor-pointer"
+                  >
+                    <option value="" className="bg-[#120d07] text-slate-300">Bağlantı Yok (Serbest Tomar)</option>
+                    {activeGoals.map(g => (
+                      <option key={g.id} value={g.id} className="bg-[#120d07] text-amber-300">
+                        {g.title} ({g.current}/{g.target} {g.unit})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {linkedGoal && (
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-bold">
+                    <Sparkles size={13} className="text-amber-400" />
+                    <span>Bağlı Görev: %{Math.min(100, Math.round((linkedGoal.current / linkedGoal.target) * 100))} Tamamlandı</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="my-5 flex-1 flex flex-col">
+              <textarea
+                value={activeNote.content}
+                onChange={(e) => handleUpdate({ content: e.target.value })}
+                placeholder="Kadim parşömeninizi doldurun..."
+                rows={6}
+                className="w-full bg-transparent text-amber-100 placeholder:text-amber-900/40 text-sm leading-relaxed outline-none resize-none font-sans font-medium"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 border-t border-amber-900/40 font-sans">
+              {/* Checklist */}
+              <div className="p-4 rounded-2xl bg-[#110c07] border border-amber-900/40 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-1.5 font-mono">
+                    <CheckCircle2 size={15} className="text-amber-400" />
+                    <span>Görev Adımları (To-Do)</span>
+                  </h3>
+                  <span className="text-[10px] font-mono text-amber-400 bg-black/40 px-2 py-0.5 rounded border border-amber-900/30 font-bold">
+                    {activeNote.checklist.filter(i => i.done).length}/{activeNote.checklist.length} Tamam
+                  </span>
+                </div>
+
+                <form onSubmit={handleAddChecklist} className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Adım ekle..."
+                    value={newChecklistText}
+                    onChange={(e) => setNewChecklistText(e.target.value)}
+                    className="flex-1 bg-[#19110a] border border-amber-900/40 rounded-xl px-3 py-1.5 text-xs text-amber-100 outline-none focus:border-amber-500"
+                  />
+                  <button type="submit" className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs shrink-0">
+                    Ekle
+                  </button>
+                </form>
+
+                <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
+                  {activeNote.checklist.map(item => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleToggleChecklist(item.id)}
+                      className={`p-2 rounded-xl border flex items-center justify-between gap-2 cursor-pointer transition-all group/chk select-none ${
+                        item.done 
+                          ? 'bg-emerald-950/20 border-emerald-900/40 opacity-50' 
+                          : 'bg-[#160f08] border-amber-900/30 hover:border-amber-500/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {item.done ? (
+                          <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                        ) : (
+                          <Circle size={16} className="text-amber-500/60 shrink-0" />
+                        )}
+                        <span className={`text-xs truncate ${item.done ? 'line-through text-slate-400' : 'text-amber-100 font-medium'}`}>
+                          {item.text}
+                        </span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteChecklist(item.id);
+                        }}
+                        className="opacity-0 group-hover/chk:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-opacity shrink-0"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  {activeNote.checklist.length === 0 && (
+                    <div className="text-center py-4 text-[11px] text-amber-900/80 font-mono">Henüz görev adımı eklenmedi.</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Kılavuz & Rota Linkleri */}
+              <div className="p-4 rounded-2xl bg-[#110c07] border border-amber-900/40 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-1.5 font-mono">
+                    <LinkIcon size={14} className="text-amber-400" />
+                    <span>Kılavuz & Rota Linkleri</span>
+                  </h3>
+                  <button
+                    onClick={() => setIsAddingLink(!isAddingLink)}
+                    className="text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-0.5"
+                  >
+                    <Plus size={12} /> Link Ekle
+                  </button>
+                </div>
+
+                {isAddingLink && (
+                  <form onSubmit={handleAddLink} className="p-2.5 rounded-xl bg-[#18110a] border border-amber-700/40 flex flex-col gap-2 animate-in fade-in">
+                    <input
+                      type="text"
+                      placeholder="Link başlığı (Örn: Wowhead Rotası)..."
+                      value={newLinkTitle}
+                      onChange={(e) => setNewLinkTitle(e.target.value)}
+                      className="bg-[#100b06] border border-amber-900/50 rounded-lg px-2.5 py-1 text-xs text-amber-100 outline-none"
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="https://..."
+                        value={newLinkUrl}
+                        onChange={(e) => setNewLinkUrl(e.target.value)}
+                        className="flex-1 bg-[#100b06] border border-amber-900/50 rounded-lg px-2.5 py-1 text-xs text-amber-100 outline-none"
+                      />
+                      <button type="submit" className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold">
+                        Kaydet
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                  {activeNote.links.map(link => (
+                    <div
+                      key={link.id}
+                      className="p-2.5 rounded-xl bg-[#160f08] border border-amber-900/30 hover:border-amber-500/40 flex items-center justify-between gap-2 group/link"
+                    >
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 min-w-0 flex-1 hover:text-amber-300 transition-colors"
+                      >
+                        <ExternalLink size={14} className="text-amber-400 shrink-0" />
+                        <span className="text-xs text-amber-100 font-semibold truncate underline underline-offset-2">{link.title}</span>
+                      </a>
+                      <button
+                        onClick={() => handleDeleteLink(link.id)}
+                        className="opacity-0 group-hover/link:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-opacity shrink-0"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  {activeNote.links.length === 0 && (
+                    <div className="text-center py-4 text-[11px] text-amber-900/80 font-mono">Kayıtlı bağlantı yok.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-slate-500 font-mono text-sm">
+            Görüntülenecek parşömen bulunamadı. Sol üstten yeni bir tane açın.
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
+export default function App() {
+  const [activeApp, setActiveApp] = useState<'os' | 'hub' | 'vault'>('hub');
+  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 8, 1));
   const [isFinanceModalOpen, setIsFinanceModalOpen] = useState(false);
 
-  // 2) TATİL GÜNLERİ VE KULLANICI TOGGLE STATE'LERİ
+  // Tatil Ayarları
   const [showHolidays, setShowHolidays] = useState<boolean>(() => {
     const saved = localStorage.getItem('nexus_show_holidays_v24');
     return saved !== null ? JSON.parse(saved) : true;
@@ -250,7 +782,7 @@ export default function App() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  // Dinamik Kategori Listesi
+  // Dinamik Kategori & Hedef State'leri
   const [goalCategories, setGoalCategories] = useState<string[]>(() => {
     const saved = localStorage.getItem('nexus_goal_categories_v24');
     return saved ? JSON.parse(saved) : ['Spor', 'WoW', 'Diablo', 'Akademi', 'Yaşam', 'Kodlama & Proje'];
@@ -258,13 +790,11 @@ export default function App() {
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState('');
 
-  // Hedefler Havuzu
   const [goalPool, setGoalPool] = useState<Omit<QuestGoal, 'current'>[]>(() => {
     const saved = localStorage.getItem('nexus_goal_pool_v24');
     return saved ? JSON.parse(saved) : DEFAULT_GOAL_POOL;
   });
 
-  // Üst Barda Aktif Hedefler
   const [activeGoals, setActiveGoals] = useState<QuestGoal[]>(() => {
     const saved = localStorage.getItem('nexus_active_goals_v24');
     if (saved) {
@@ -281,7 +811,6 @@ export default function App() {
   const [isGoalPoolModalOpen, setIsGoalPoolModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<QuestGoal | null>(null);
 
-  // Yeni Hedef Oluşturma Form State'leri
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   const [newGoalTitle, setNewGoalTitle] = useState('');
   const [newGoalCategory, setNewGoalCategory] = useState<string>('Yaşam');
@@ -309,26 +838,39 @@ export default function App() {
     ];
   });
 
+  // Parşömen & To-Do (Vault) State'leri
+  const [vaultNotes, setVaultNotes] = useState<VaultNote[]>(() => {
+    const saved = localStorage.getItem('nexus_vault_notes_v24');
+    return saved ? JSON.parse(saved) : DEFAULT_VAULT_NOTES;
+  });
+  const [selectedVaultNoteId, setSelectedVaultNoteId] = useState<string>(vaultNotes[0]?.id || '');
+  const [vaultSearchQuery, setVaultSearchQuery] = useState('');
+  const [newChecklistText, setNewChecklistText] = useState('');
+  const [newLinkTitle, setNewLinkTitle] = useState('');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
+  const [isAddingLink, setIsAddingLink] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('nexus_vault_notes_v24', JSON.stringify(vaultNotes));
+  }, [vaultNotes]);
+
+  // Modallar
   const [selectedDayDetail, setSelectedDayDetail] = useState<number | null>(null);
   const [isNewTemplateModalOpen, setIsNewTemplateModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<SavedActivityTemplate | null>(null);
-  
-  // Etkinlik İnceleme & Canlı Düzenleme
   const [viewingEvent, setViewingEvent] = useState<CalendarEventItem | null>(null);
   const [viewingCost, setViewingCost] = useState<number>(0);
   const [viewingCategory, setViewingCategory] = useState<string>('Yeme-İçme & Sosyal');
   const [viewingNote, setViewingNote] = useState<string>('');
 
   const [draggedTemplate, setDraggedTemplate] = useState<SavedActivityTemplate | null>(null);
-
-  // Sürükle-Bırak Onay Modalı
   const [dropModalData, setDropModalData] = useState<{ day: number; template: SavedActivityTemplate } | null>(null);
   const [dropStartHour, setDropStartHour] = useState<number>(20);
   const [dropEndHour, setDropEndHour] = useState<string>('auto');
   const [dropCost, setDropCost] = useState<number>(0);
   const [dropExpenseCategory, setDropExpenseCategory] = useState<string>('Yeme-İçme & Sosyal');
 
-  // Gün İçi Hızlı Form State'leri
+  // Gün İçi Hızlı Form
   const [formCategory, setFormCategory] = useState<CategoryType>('Oyunlar');
   const [formSelectedGame, setFormSelectedGame] = useState<string>('Metin2');
   const [formCustomGameName, setFormCustomGameName] = useState<string>('');
@@ -357,7 +899,6 @@ export default function App() {
     localStorage.setItem('nexus_activity_pool_v24', JSON.stringify(activityPool));
     localStorage.setItem('nexus_events_v24', JSON.stringify(events));
 
-    // Nexus Finance Köprüsü
     const transactions: FinanceTransaction[] = events
       .filter(e => e.cost > 0)
       .map(e => ({
@@ -381,13 +922,11 @@ export default function App() {
     .filter(e => e.year === activeYear && e.month === activeMonth)
     .reduce((sum, e) => sum + (e.cost || 0), 0);
 
-  // Bir Günün Tatil Durumunu ve Etiketini Belirleme
   const getDayHolidayInfo = (day: number) => {
     const dateKey = `${activeYear}-${activeMonth}-${day}`;
-    const dayOfWeek = (new Date(activeYear, activeMonth, day).getDay() + 6) % 7; // 0: Pazartesi ... 5: Cts, 6: Paz
+    const dayOfWeek = (new Date(activeYear, activeMonth, day).getDay() + 6) % 7;
     const isWeekend = dayOfWeek === 5 || dayOfWeek === 6;
     const officialHoliday = getTurkishOfficialHoliday(activeMonth, day, activeYear);
-
     const defaultIsHoliday = isWeekend || Boolean(officialHoliday);
     const isHoliday = customHolidays[dateKey] !== undefined ? customHolidays[dateKey] : defaultIsHoliday;
 
@@ -401,7 +940,6 @@ export default function App() {
     return { isHoliday, label, isWeekend, officialHoliday, dateKey };
   };
 
-  // Kullanıcının Bir Günü Tatil Olarak Açıp Kapatması (Toggle)
   const handleToggleDayHoliday = (day: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     const { isHoliday, dateKey } = getDayHolidayInfo(day);
@@ -436,8 +974,7 @@ export default function App() {
     if (!newCategoryInput.trim()) return;
     const trimmed = newCategoryInput.trim();
     if (!goalCategories.includes(trimmed)) {
-      const updated = [...goalCategories, trimmed];
-      setGoalCategories(updated);
+      setGoalCategories([...goalCategories, trimmed]);
       setNewGoalCategory(trimmed);
     }
     setNewCategoryInput('');
@@ -485,7 +1022,7 @@ export default function App() {
       isCustom: true
     };
 
-    setGoalPool(prev => [newGoal, ...prev]);
+    setGoalPool([newGoal, ...goalPool]);
     setNewGoalTitle('');
     setNewGoalTarget(10);
     setNewGoalUnit('adet');
@@ -536,22 +1073,16 @@ export default function App() {
 
   const handleLoadTemplateIntoForm = (tpl: SavedActivityTemplate) => {
     setFormCategory(tpl.category);
-    if (tpl.gameName) {
-      setFormSelectedGame(tpl.gameName);
-    }
+    if (tpl.gameName) setFormSelectedGame(tpl.gameName);
     setFormTitle(tpl.title);
     setFormNote(tpl.note || '');
     setFormCost(tpl.defaultCost || 0);
-    if (tpl.expenseCategory) {
-      setFormExpenseCategory(tpl.expenseCategory);
-    }
-    const dur = tpl.defaultDurationHours || 1;
-    setEndHour(Math.min(24, startHour + dur));
+    if (tpl.expenseCategory) setFormExpenseCategory(tpl.expenseCategory);
+    setEndHour(Math.min(24, startHour + (tpl.defaultDurationHours || 1)));
   };
 
   const handleSaveEventAndRegisterToPool = (e: React.FormEvent, targetDay: number) => {
     e.preventDefault();
-
     const safeStart = startHour;
     const safeEnd = endHour;
     const gameFinal = formCategory === 'Oyunlar'
@@ -568,9 +1099,7 @@ export default function App() {
 
     if (safeEnd <= 24) {
       for (let h = safeStart; h < safeEnd; h++) {
-        const count = events.filter(
-          ev => ev.year === activeYear && ev.month === activeMonth && ev.day === targetDay && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === activeYear && ev.month === activeMonth && ev.day === targetDay && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var.`);
           return;
@@ -598,9 +1127,7 @@ export default function App() {
       setEvents(prev => [...prev, newEvent]);
     } else {
       for (let h = safeStart; h < 24; h++) {
-        const count = events.filter(
-          ev => ev.year === activeYear && ev.month === activeMonth && ev.day === targetDay && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === activeYear && ev.month === activeMonth && ev.day === targetDay && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var.`);
           return;
@@ -609,9 +1136,7 @@ export default function App() {
 
       const spillHours = safeEnd - 24;
       for (let h = 0; h < spillHours; h++) {
-        const count = events.filter(
-          ev => ev.year === nextY && ev.month === nextM && ev.day === nextD && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === nextY && ev.month === nextM && ev.day === nextD && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Ertesi gün saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var.`);
           return;
@@ -656,10 +1181,7 @@ export default function App() {
       setEvents(prev => [...prev, part1, part2]);
     }
 
-    const existsInPool = activityPool.some(
-      item => item.title.toLowerCase() === finalTitle.toLowerCase() && item.category === formCategory && item.gameName === gameFinal
-    );
-
+    const existsInPool = activityPool.some(item => item.title.toLowerCase() === finalTitle.toLowerCase() && item.category === formCategory && item.gameName === gameFinal);
     if (!existsInPool) {
       const newPoolItem: SavedActivityTemplate = {
         id: 'pool-' + Date.now(),
@@ -696,9 +1218,7 @@ export default function App() {
 
     if (totalEnd <= 24) {
       for (let h = start; h < totalEnd; h++) {
-        const count = events.filter(
-          ev => ev.year === activeYear && ev.month === activeMonth && ev.day === targetDay && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === activeYear && ev.month === activeMonth && ev.day === targetDay && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var.`);
           setDraggedTemplate(null);
@@ -727,9 +1247,7 @@ export default function App() {
       setEvents(prev => [...prev, newEvent]);
     } else {
       for (let h = start; h < 24; h++) {
-        const count = events.filter(
-          ev => ev.year === activeYear && ev.month === activeMonth && ev.day === targetDay && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === activeYear && ev.month === activeMonth && ev.day === targetDay && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var.`);
           setDraggedTemplate(null);
@@ -739,9 +1257,7 @@ export default function App() {
 
       const spillHours = totalEnd - 24;
       for (let h = 0; h < spillHours; h++) {
-        const count = events.filter(
-          ev => ev.year === nextY && ev.month === nextM && ev.day === nextD && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === nextY && ev.month === nextM && ev.day === nextD && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Ertesi gün saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var.`);
           setDraggedTemplate(null);
@@ -815,9 +1331,7 @@ export default function App() {
 
     if (parsedEnd <= 24) {
       for (let h = start; h < parsedEnd; h++) {
-        const count = events.filter(
-          ev => ev.year === activeYear && ev.month === activeMonth && ev.day === day && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === activeYear && ev.month === activeMonth && ev.day === day && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var. Lütfen farklı bir saat seçin.`);
           return;
@@ -845,9 +1359,7 @@ export default function App() {
       setEvents(prev => [...prev, newCalendarEvent]);
     } else {
       for (let h = start; h < 24; h++) {
-        const count = events.filter(
-          ev => ev.year === activeYear && ev.month === activeMonth && ev.day === day && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === activeYear && ev.month === activeMonth && ev.day === day && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var.`);
           return;
@@ -856,9 +1368,7 @@ export default function App() {
 
       const spillHours = parsedEnd - 24;
       for (let h = 0; h < spillHours; h++) {
-        const count = events.filter(
-          ev => ev.year === nextY && ev.month === nextM && ev.day === nextD && (h >= ev.startHour && h < ev.endHour)
-        ).length;
+        const count = events.filter(ev => ev.year === nextY && ev.month === nextM && ev.day === nextD && (h >= ev.startHour && h < ev.endHour)).length;
         if (count >= 3) {
           alert(`Ertesi gün (${nextD} ${MONTH_NAMES[nextM]}) saat ${h < 10 ? '0' + h : h}:00 diliminde zaten maksimum 3 etkinlik var.`);
           return;
@@ -975,7 +1485,8 @@ export default function App() {
       activityPool,
       goalCategories,
       customHolidays,
-      showHolidays
+      showHolidays,
+      vaultNotes
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -986,6 +1497,181 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
+  // =========================================================================
+  // GÖRÜNÜM 1: NEXUS HUB (ANA DASHBOARD)
+  // =========================================================================
+  if (activeApp === 'hub') {
+    return (
+      <div className="min-h-screen bg-[#06080e] text-slate-100 flex font-sans relative selection:bg-amber-500 selection:text-black overflow-x-hidden">
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-900/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-amber-950/20 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(#1a2035_1px,transparent_1px)] [background-size:24px_24px] opacity-25" />
+        </div>
+
+        <aside className="w-20 hover:w-72 transition-all duration-300 ease-in-out bg-[#080c14]/95 border-r border-amber-500/25 z-40 flex flex-col justify-between p-3.5 group/nav backdrop-blur-2xl shrink-0 shadow-[4px_0_30px_rgba(0,0,0,0.85)] select-none">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-3.5 px-1 py-1 overflow-hidden">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 via-purple-600 to-red-600 p-[1.5px] shadow-[0_0_20px_rgba(245,158,11,0.35)] shrink-0 flex items-center justify-center">
+                <div className="w-full h-full bg-[#080c14] rounded-2xl flex items-center justify-center">
+                  <Radio className="text-amber-400 animate-pulse" size={20} />
+                </div>
+              </div>
+              <div className="opacity-0 group-hover/nav:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+                <span className="text-xs font-black tracking-widest text-amber-300 uppercase block">NEXUS GATEWAY</span>
+                <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" /> Online
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-slate-800/80 pt-4">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 opacity-0 group-hover/nav:opacity-100 transition-opacity px-2 mb-1">
+                Uygulamalar & Modüller
+              </span>
+
+              <button onClick={() => setActiveApp('hub')} className="w-full flex items-center gap-3.5 p-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-500/5 border-l-2 border-amber-400 text-amber-300 overflow-hidden shadow-sm">
+                <LayoutGrid size={19} className="shrink-0 text-amber-400" />
+                <span className="text-xs font-bold opacity-0 group-hover/nav:opacity-100 whitespace-nowrap">Nexus Hub</span>
+              </button>
+              <button onClick={() => setActiveApp('os')} className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 overflow-hidden">
+                <Shield size={19} className="shrink-0 text-slate-400" />
+                <span className="text-xs font-bold opacity-0 group-hover/nav:opacity-100 whitespace-nowrap">Nexus OS</span>
+              </button>
+              <button onClick={() => setIsFinanceModalOpen(true)} className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-emerald-300 hover:bg-emerald-500/10 overflow-hidden">
+                <Wallet size={19} className="shrink-0 text-slate-400" />
+                <span className="text-xs font-bold opacity-0 group-hover/nav:opacity-100 whitespace-nowrap">Nexus Finance</span>
+              </button>
+              <button onClick={() => setActiveApp('vault')} className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-amber-300 hover:bg-amber-950/20 transition-all overflow-hidden" title="Nexus Vault (Tomar & To-Do)">
+                <ScrollText size={19} className="shrink-0 text-slate-400" />
+                <span className="text-xs font-bold opacity-0 group-hover/nav:opacity-100 whitespace-nowrap">Nexus Vault</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-800/80 pt-3">
+            <div className="flex items-center gap-3 p-1.5 rounded-xl bg-black/40 border border-slate-800/60 overflow-hidden">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white shrink-0 shadow-md">
+                <Activity size={17} />
+              </div>
+              <div className="opacity-0 group-hover/nav:opacity-100 transition-opacity whitespace-nowrap overflow-hidden">
+                <span className="text-xs font-bold text-slate-200 block truncate">Nexus Suite Core</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+          <NexusHub 
+            events={events}
+            activeGoals={activeGoals}
+            monthlyTotalCost={monthlyTotalCost}
+            activeYear={activeYear}
+            activeMonth={activeMonth}
+            onLaunchOS={() => setActiveApp('os')}
+            onOpenFinance={() => setIsFinanceModalOpen(true)}
+            onOpenGoalPool={() => setIsGoalPoolModalOpen(true)}
+            onOpenDayDetail={(day) => { setSelectedDayDetail(day); setActiveApp('os'); }}
+            onToggleComplete={(id) => setEvents(events.map(ev => ev.id === id ? { ...ev, isCompleted: !ev.isCompleted } : ev))}
+            onEditGoal={(goal) => setEditingGoal(goal)}
+            renderGoalIcon={renderGoalIcon}
+            {...({ onOpenVault: () => setActiveApp('vault') } as any)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // GÖRÜNÜM 2: NEXUS VAULT (KADİM PARŞÖMEN, TO-DO VE REHBER LİNKLERİ)
+  // =========================================================================
+  if (activeApp === 'vault') {
+    return (
+      <div className="min-h-screen bg-[#06080e] text-slate-100 flex font-sans relative selection:bg-amber-500 selection:text-black overflow-x-hidden">
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-900/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-amber-950/20 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(#1a2035_1px,transparent_1px)] [background-size:24px_24px] opacity-25" />
+        </div>
+
+        <aside className="w-20 hover:w-72 transition-all duration-300 ease-in-out bg-[#080c14]/95 border-r border-amber-500/25 z-40 flex flex-col justify-between p-3.5 group/nav backdrop-blur-2xl shrink-0 shadow-[4px_0_30px_rgba(0,0,0,0.85)] select-none">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-3.5 px-1 py-1 overflow-hidden">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 via-purple-600 to-red-600 p-[1.5px] shadow-[0_0_20px_rgba(245,158,11,0.35)] shrink-0 flex items-center justify-center">
+                <div className="w-full h-full bg-[#080c14] rounded-2xl flex items-center justify-center">
+                  <Radio className="text-amber-400 animate-pulse" size={20} />
+                </div>
+              </div>
+              <div className="opacity-0 group-hover/nav:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+                <span className="text-xs font-black tracking-widest text-amber-300 uppercase block">NEXUS GATEWAY</span>
+                <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" /> Online
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-slate-800/80 pt-4">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 opacity-0 group-hover/nav:opacity-100 transition-opacity px-2 mb-1">
+                Uygulamalar & Modüller
+              </span>
+
+              <button onClick={() => setActiveApp('hub')} className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 overflow-hidden">
+                <LayoutGrid size={19} className="shrink-0 text-slate-400" />
+                <span className="text-xs font-bold opacity-0 group-hover/nav:opacity-100 whitespace-nowrap">Nexus Hub</span>
+              </button>
+              <button onClick={() => setActiveApp('os')} className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 overflow-hidden">
+                <Shield size={19} className="shrink-0 text-slate-400" />
+                <span className="text-xs font-bold opacity-0 group-hover/nav:opacity-100 whitespace-nowrap">Nexus OS</span>
+              </button>
+              <button onClick={() => setIsFinanceModalOpen(true)} className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-emerald-300 hover:bg-emerald-500/10 overflow-hidden">
+                <Wallet size={19} className="shrink-0 text-slate-400" />
+                <span className="text-xs font-bold opacity-0 group-hover/nav:opacity-100 whitespace-nowrap">Nexus Finance</span>
+              </button>
+              <button onClick={() => setActiveApp('vault')} className="w-full flex items-center gap-3.5 p-2.5 rounded-xl bg-gradient-to-r from-amber-600/20 to-amber-900/10 border-l-2 border-amber-500 text-amber-300 overflow-hidden shadow-sm">
+                <ScrollText size={19} className="shrink-0 text-amber-400" />
+                <span className="text-xs font-bold opacity-0 group-hover/nav:opacity-100 whitespace-nowrap">Nexus Vault (Tomar)</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-800/80 pt-3">
+            <div className="flex items-center gap-3 p-1.5 rounded-xl bg-black/40 border border-slate-800/60 overflow-hidden">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white shrink-0 shadow-md">
+                <Activity size={17} />
+              </div>
+              <div className="opacity-0 group-hover/nav:opacity-100 transition-opacity whitespace-nowrap overflow-hidden">
+                <span className="text-xs font-bold text-slate-200 block truncate">Nexus Suite Core</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <NexusVaultView
+          notes={vaultNotes}
+          setNotes={setVaultNotes}
+          selectedNoteId={selectedVaultNoteId}
+          setSelectedNoteId={setSelectedVaultNoteId}
+          searchQuery={vaultSearchQuery}
+          setSearchQuery={setVaultSearchQuery}
+          newChecklistText={newChecklistText}
+          setNewChecklistText={setNewChecklistText}
+          newLinkTitle={newLinkTitle}
+          setNewLinkTitle={setNewLinkTitle}
+          newLinkUrl={newLinkUrl}
+          setNewLinkUrl={setNewLinkUrl}
+          isAddingLink={isAddingLink}
+          setIsAddingLink={setIsAddingLink}
+          onBackToHub={() => setActiveApp('hub')}
+          onLaunchOS={() => setActiveApp('os')}
+          activeGoals={activeGoals}
+        />
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // GÖRÜNÜM 3: NEXUS OS (ORİJİNAL ÇALIŞAN TAM TAKVİM EKRANI)
+  // =========================================================================
   return (
     <div className="min-h-screen bg-[#06080e] text-slate-100 flex font-sans relative selection:bg-amber-500 selection:text-black overflow-x-hidden">
       {/* KARANLIK ATMOSFER KATMANI */}
@@ -995,7 +1681,7 @@ export default function App() {
         <div className="absolute inset-0 bg-[radial-gradient(#1a2035_1px,transparent_1px)] [background-size:24px_24px] opacity-25" />
       </div>
 
-      {/* GENİŞLETİLMİŞ AÇILIR SOL MENÜ BARI (W-20 TO HOVER:W-72) */}
+      {/* AÇILIR SOL MENÜ BARI */}
       <aside className="w-20 hover:w-72 transition-all duration-300 ease-in-out bg-[#080c14]/95 border-r border-amber-500/25 z-40 flex flex-col justify-between p-3.5 group/nav backdrop-blur-2xl shrink-0 shadow-[4px_0_30px_rgba(0,0,0,0.85)] select-none">
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-3.5 px-1 py-1 overflow-hidden">
@@ -1021,7 +1707,7 @@ export default function App() {
             </span>
 
             <button
-              onClick={() => alert("Nexus Hub yakında: Tüm modülleri birleştiren ana konsol açılacak.")}
+              onClick={() => setActiveApp('hub')}
               className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 transition-all group/item overflow-hidden"
               title="Nexus Hub (Ana Komuta)"
             >
@@ -1035,7 +1721,7 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setActiveModule('nexus-os')}
+              onClick={() => setActiveApp('os')}
               className="w-full flex items-center gap-3.5 p-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-500/5 border-l-2 border-amber-400 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)] transition-all overflow-hidden"
               title="Nexus OS (Zaman & Görev)"
             >
@@ -1063,16 +1749,16 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => alert("Nexus Vault: Kod parçaları, raid taktikleri ve tez notları modülü yakında aktifleşecek.")}
-              className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-purple-300 hover:bg-purple-500/10 transition-all group/item overflow-hidden"
+              onClick={() => setActiveApp('vault')}
+              className="w-full flex items-center gap-3.5 p-2.5 rounded-xl text-slate-300 hover:text-amber-300 hover:bg-amber-950/20 transition-all group/item overflow-hidden"
               title="Nexus Vault (Notlar & Kasalar)"
             >
-              <div className="p-1.5 rounded-lg bg-black/40 text-slate-400 group-hover/item:text-purple-400 shrink-0">
-                <Database size={19} />
+              <div className="p-1.5 rounded-lg bg-black/40 text-slate-400 group-hover/item:text-amber-400 shrink-0">
+                <ScrollText size={19} />
               </div>
               <div className="opacity-0 group-hover/nav:opacity-100 transition-opacity whitespace-nowrap flex items-center justify-between flex-1">
                 <span className="text-xs font-bold">Nexus Vault</span>
-                <span className="text-[9px] font-mono bg-slate-800 px-1.5 py-0.5 rounded text-slate-400">Arşiv</span>
+                <span className="text-[9px] font-mono bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-600/40">Tomar</span>
               </div>
             </button>
           </div>
@@ -1558,7 +2244,6 @@ export default function App() {
                       {selectedDayDetail} {MONTH_NAMES[activeMonth]} {activeYear} — Günlük Zaman Çizelgesi
                     </h3>
 
-                    {/* 2) MODAL İÇİ TATİL GÜNÜ / ÇALIŞMA GÜNÜ TOGGLE BUTONU */}
                     <button
                       type="button"
                       onClick={() => handleToggleDayHoliday(selectedDayDetail)}
@@ -1587,7 +2272,6 @@ export default function App() {
             </div>
 
             <div className="flex flex-1 overflow-hidden mt-4 gap-6">
-              {/* SOL SÜTUN: FORM + HIZLI ŞABLONLAR */}
               <div className="w-[420px] flex flex-col gap-4 border-r border-slate-800/80 pr-6 overflow-y-auto shrink-0">
                 <form onSubmit={(e) => handleSaveEventAndRegisterToPool(e, selectedDayDetail)} className="flex flex-col gap-3">
                   <div>
@@ -1758,7 +2442,6 @@ export default function App() {
                   </button>
                 </form>
 
-                {/* BÜYÜTÜLMÜŞ HIZLI ŞABLONLAR HAVUZU */}
                 <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase tracking-wider text-amber-300/90 flex items-center gap-1.5">
@@ -1822,7 +2505,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* SAĞ SÜTUN: 24 SAATLİK ÇİZELGE */}
               <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-2">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-800 shrink-0">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
@@ -1919,9 +2601,6 @@ export default function App() {
                         {hourEvents.length === 0 && (
                           <div className="col-span-3 text-xs font-mono text-slate-500 py-1 flex items-center gap-2">
                             <span>— Boş Saat Dilimi</span>
-                            <span className="opacity-0 group-hover:opacity-100 text-amber-400 font-bold">
-                              (Aralık seçmek için tıkla ya da şablon sürükle)
-                            </span>
                           </div>
                         )}
                       </div>
@@ -2114,7 +2793,7 @@ export default function App() {
         </div>
       )}
 
-      {/* POPUP: HEDEFLER HAVUZU */}
+      {/* POPUP: HEDEFLER HAVUZU (KATEGORİ EKLEME & İKON SEÇİCİ DESTEKLİ) */}
       {isGoalPoolModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="w-full max-w-2xl bg-[#0c101a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[88vh]">
@@ -2829,7 +3508,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* DOĞRUDAN DÜZENLENEBİLİR MALİYET & FİNANS KARTI */}
             <div className="p-3.5 rounded-2xl bg-[#121724] border border-amber-500/30 mb-3 flex flex-col gap-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
