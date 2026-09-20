@@ -1,0 +1,17 @@
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\bin\Debug\net9.0\NexusGamingOS.Infrastructure.deps.json
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\bin\Debug\net9.0\NexusGamingOS.Infrastructure.dll
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\bin\Debug\net9.0\NexusGamingOS.Infrastructure.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\bin\Debug\net9.0\NexusGamingOS.Application.dll
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\bin\Debug\net9.0\NexusGamingOS.Domain.dll
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\bin\Debug\net9.0\NexusGamingOS.Application.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\bin\Debug\net9.0\NexusGamingOS.Domain.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\NexusGamingOS.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\NexusGamingOS.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\NexusGamingOS.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\NexusGamingOS.Infrastructure.AssemblyInfo.cs
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\NexusGamingOS.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\NexusGam.4F06DCF8.Up2Date
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\NexusGamingOS.Infrastructure.dll
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\refint\NexusGamingOS.Infrastructure.dll
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\NexusGamingOS.Infrastructure.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Infrastructure\NexusGamingOS.Infrastructure\obj\Debug\net9.0\ref\NexusGamingOS.Infrastructure.dll

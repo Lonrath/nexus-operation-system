@@ -1,0 +1,11 @@
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\bin\Debug\net9.0\NexusGamingOS.Domain.deps.json
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\bin\Debug\net9.0\NexusGamingOS.Domain.dll
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\bin\Debug\net9.0\NexusGamingOS.Domain.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\obj\Debug\net9.0\NexusGamingOS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\obj\Debug\net9.0\NexusGamingOS.Domain.AssemblyInfoInputs.cache
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\obj\Debug\net9.0\NexusGamingOS.Domain.AssemblyInfo.cs
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\obj\Debug\net9.0\NexusGamingOS.Domain.csproj.CoreCompileInputs.cache
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\obj\Debug\net9.0\NexusGamingOS.Domain.dll
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\obj\Debug\net9.0\refint\NexusGamingOS.Domain.dll
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\obj\Debug\net9.0\NexusGamingOS.Domain.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Domain\obj\Debug\net9.0\ref\NexusGamingOS.Domain.dll

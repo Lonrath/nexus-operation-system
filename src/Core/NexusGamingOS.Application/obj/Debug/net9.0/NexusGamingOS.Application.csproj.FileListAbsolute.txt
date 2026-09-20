@@ -1,0 +1,15 @@
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\bin\Debug\net9.0\NexusGamingOS.Application.deps.json
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\bin\Debug\net9.0\NexusGamingOS.Application.dll
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\bin\Debug\net9.0\NexusGamingOS.Application.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\bin\Debug\net9.0\NexusGamingOS.Domain.dll
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\bin\Debug\net9.0\NexusGamingOS.Domain.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\NexusGamingOS.Application.csproj.AssemblyReference.cache
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\NexusGamingOS.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\NexusGamingOS.Application.AssemblyInfoInputs.cache
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\NexusGamingOS.Application.AssemblyInfo.cs
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\NexusGamingOS.Application.csproj.CoreCompileInputs.cache
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\NexusGam.697094C6.Up2Date
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\NexusGamingOS.Application.dll
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\refint\NexusGamingOS.Application.dll
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\NexusGamingOS.Application.pdb
+C:\Users\kaanaydin\Desktop\Project\src\Core\NexusGamingOS.Application\obj\Debug\net9.0\ref\NexusGamingOS.Application.dll
