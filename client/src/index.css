@@ -1,10 +1,99 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Tailwind v4 kullanıyorsanız yukarıdaki üç satırı silip yerine
+  tek satır yazın:   @import "tailwindcss";
+  Sürümünüzü `npm ls tailwindcss` ile görebilirsiniz.
+*/
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
-  background-color: #0b0e14;
+  margin: 0;
+  background-color: #06080e;
   color: #f3f4f6;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+  ÖNEMLİ DEĞİŞİKLİK
+  Eskiden body'de `user-select: none` vardı. Bu, uygulamadaki HİÇBİR
+  metnin seçilip kopyalanamaması demekti — Vault'taki notlarınız, farm
+  rotalarınız, link başlıklarınız dahil.
+
+  Artık sadece sürükle-bırak ve takvim kılavuzu gibi "arayüz mobilyası"
+  seçilemez; okunabilir içerik serbest.
+*/
+[data-no-select],
+aside nav,
+thead,
+[draggable='true'] {
+  -webkit-user-select: none;
   user-select: none;
+}
+
+input,
+textarea,
+p,
+h1,
+h2,
+h3,
+h4,
+li,
+a,
+[data-selectable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Ekran okuyucular için görünmez başlıklar. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* İnce kaydırma çubukları. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1e293b transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Hareket azaltma tercihi olan kullanıcılar için animasyonları kıs. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
