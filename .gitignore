@@ -23,3 +23,23 @@ yarn-error.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Build çıktıları
+dist/
+release/
+*.tsbuildinfo
+
+# Vite / Electron önbellekleri
+.vite/
+*.log
+
+# .NET (sln varsa)
+bin/
+obj/
+.vs/
+
+# Ortam ve gizli dosyalar
+.env.*
+
+# İşletim sistemi / editör
+*.swp
